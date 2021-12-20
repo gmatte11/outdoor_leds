@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 from PySimpleGUI.PySimpleGUI import TIMEOUT_KEY
 from .mock_leds import *
-from lib import ProgramRunner, XMas
+from core import ProgramRunner, XMas
 
 LED_COUNT=30
 

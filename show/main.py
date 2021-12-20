@@ -2,7 +2,7 @@ from time import sleep
 import board
 import neopixel
 
-from lib import ProgramRunner, XMas
+from core import ProgramRunner, XMas
 
 class App(object):
     def __init__(self):
