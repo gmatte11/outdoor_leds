@@ -1,9 +1,12 @@
-from getopt import getopt
+import argparse
 import sys
 
-opts, args = getopt(sys.argv[1:], "v")
+parser = argparse.ArgumentParser()
+parser.add_argument('--visualize', '-v', action='store_true')
 
-if "-v" in opts:
+args = parser.parse_args()
+
+if args.visualize:
     import vis
     vis.run()
 else:
