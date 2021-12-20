@@ -19,6 +19,23 @@ def wheel(p):
         b = int(255 - p * 3)
     return (r, g, b)
 
+def split_color(c):
+    if type(c) is int:
+        return (c >> 24 & 0xff, c >> 16 & 0xff, c >> 8 & 0xff, c & 0xff)
+    else:
+        return c
+
+def recombine(c):
+    if type(c) in (list, tuple):
+        if len(c) == 4:
+            return (c[0] & 0xff) << 24 | (c[1] & 0xff) << 16 | (c[2] & 0xff) << 8 | (c[3] & 0xff)
+        elif len(c) == 3:
+            return (c[0] & 0xff) << 16 | (c[1] & 0xff) << 8 | (c[2] & 0xff)
+        else:
+            return 0xffffff
+    else:
+        return c
+
 class EggClockTimer:
     def __init__(self, timeout: float = 0.):
         self.set_timeout(timeout)

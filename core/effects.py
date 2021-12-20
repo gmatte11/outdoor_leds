@@ -1,3 +1,5 @@
+from .utils import EggClockTimer, split_color, recombine
+
 def train(n, repeat: int = 2, colors=lambda x: 0xff0000, off_colors = lambda x: 0, timer = None):
     if type(repeat) is not int: raise AttributeError('repeat must be an integer')
     
@@ -52,5 +54,36 @@ def color_train(length, gap, count, colors, timer = None):
             if self.carts[-1] > len(leds) + length:
                 self.launch(leds)
 
+    return _()
+
+def breath(colors, speed, timer = None):
+    class _():
+        def __init__(self):
+            self._c = next(colors)
+            self._t = 0.
+
+        @classmethod
+        def _blend(cls, t: float, color):
+            ratio = (t * t) / (2. * (t * t - t) + 1.)
+            c = split_color(color)
+            return recombine([int(x * ratio) & 0xff for x in c])
+
+        @classmethod
+        def _to_blend_t(cls, t: float):
+            return 1. - (t - 1.) if t > 1. else t
+
+        def __call__(self, leds):
+            if timer and not timer.expired():
+                return
+
+            if self._t >= 2.:
+                self._t = 0.
+                self._c = next(colors)
+
+            c = _._blend(_._to_blend_t(self._t), self._c)
+            self._t += speed
+
+            leds.fill(c)
+            leds.show()
 
     return _()

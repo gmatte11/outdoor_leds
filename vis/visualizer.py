@@ -17,7 +17,7 @@ def run():
 
     strip = Strip(LED_COUNT)
     runner = ProgramRunner(strip)
-    runner.start(XMas())
+    runner.start(XMas(), delay = 3)
 
     layout = [  [sg.Text("Rate:"), sg.In(key='Rate'), sg.Button('Set', key='SetRate')], 
                 leds(LED_COUNT),

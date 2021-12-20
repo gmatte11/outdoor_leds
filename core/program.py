@@ -21,10 +21,10 @@ class ProgramRunner:
         self._p = None
         self._keep = False
 
-    def start(self, p: ProgramBase, keepalive=False) -> None:
+    def start(self, p: ProgramBase, keepalive=False, *args, **kwargs) -> None:
         if self._p: self._p.end(self)
         self._p = p
-        self._p.start(self)
+        self._p.start(self, *args, **kwargs)
         self._keep = keepalive
 
     def update(self) -> None:
@@ -72,13 +72,13 @@ class XMas(ProgramBase):
             dt.timedelta(hours=8)
         )
 
-    def start(self, runner: ProgramRunner) -> None:
+    def start(self, runner: ProgramRunner, delay=20) -> None:
         n = runner.strip.n
         self._gen = itt.cycle((
             color_train(3, 2, n - 10, rainbow(20)),
-            train(1, 2, lambda x: 0xff0000 if x % 2 == 0 else 0x00ff00, timer=EggClockTimer(1)),
+            breath(itt.cycle([0xff0000, 0x00ff00]), .05),
         ))
-        self._timer = EggClockTimer(20)
+        self._timer = EggClockTimer(delay)
         self._fx = next(self._gen)
 
     def update(self, runner: ProgramRunner) -> None:
