@@ -1,6 +1,6 @@
 from abc import abstractclassmethod
 import datetime as dt
-from typing import Tuple
+from typing import Tuple, List
 
 from .effects import *
 from .colors import *
@@ -12,79 +12,78 @@ _now = dt.datetime.now
 
 _is_resettable = lambda obj: callable(getattr(obj, 'reset', None))
 
-class ProgramBase:
-    pass
-
 class ProgramRunner:
-    def __init__(self, strip) -> None:
-        self.strip = strip
-        self._p = None
-        self._keep = False
-
-    def start(self, p: ProgramBase, keepalive=False, *args, **kwargs) -> None:
-        if self._p: self._p.end(self)
-        self._p = p
-        self._p.start(self, *args, **kwargs)
-        self._keep = keepalive
-
-    def update(self) -> None:
-        if self._p:
-            self._p.update(self)
-
-            if not self._keep and not self._p.is_active(_now()):
-                self._p = None
-                self.strip.fill(0)
-                self.strip.show()
-
+    pass
 
 class ProgramBase:
     @abstractclassmethod
-    def schedule(self) -> Tuple[dt.datetime, dt.datetime, dt.time, dt.timedelta]:
-        #returns a range of dates + a range of time
-        #(start_date, end_date, start_time, timerange)
-        pass
-
-    def is_active(self, datetime: dt.datetime) -> bool:
-        start_date, end_date, start_time, delay = self.schedule()
-        if start_date <= datetime < end_date:
-            start = dt.datetime.combine(datetime.date(), start_time)
-            end = start + delay
-            return start <= datetime < end
+    def is_scheduled(cls, when: dt.datetime) -> bool:
         return False
-    
+
     def start(self, runner: ProgramRunner) -> None:
         pass
 
     def end(self, runner: ProgramRunner) -> None:
         pass
 
-    def update(self, runner: ProgramRunner) -> None:
+    def update(self, runner: ProgramRunner, dt: float) -> None:
         pass
+
+class DefaultProgram(ProgramBase):
+    pass
 
 class XMas(ProgramBase):
     @classmethod
-    def schedule(self) -> Tuple[dt.datetime, dt.datetime, dt.time, dt.timedelta]:
-        today = dt.datetime.today()
-        return (
-            dt.datetime(today.year, 12, 1),
-            dt.datetime(today.year, 12, 28, 8),
-            dt.time(16),
-            dt.timedelta(hours=8)
-        )
+    def is_scheduled(cls, when: dt.datetime) -> bool:
+        return dt.date(when.year, 12, 1) <= when.date() <= dt.date(when.year, 12, 28)
 
     def start(self, runner: ProgramRunner, delay=20) -> None:
         n = runner.strip.n
         self._gen = itt.cycle((
-            color_train(3, 2, n - 10, rainbow(20)),
+            #color_train(3, 2, n - 10, rainbow(20)),
             breath(itt.cycle([0xff0000, 0x00ff00]), .05),
         ))
         self._timer = EggClockTimer(delay)
         self._fx = next(self._gen)
 
-    def update(self, runner: ProgramRunner) -> None:
+    def update(self, runner: ProgramRunner, dt: float) -> None:
         if self._timer.expired():
             self._fx = next(self._gen)
             if _is_resettable(self._fx):
                 self._fx.reset()
 
         self._fx(runner.strip)
+
+class ProgramRunner:
+    def __init__(self, strip) -> None:
+        self.strip = strip
+        self._p = None
+
+    def start(self, p: ProgramBase, *args, **kwargs) -> None:
+        if self._p: self._p.end(self)
+        self._p = p
+        if self._p: self._p.start(self, *args, **kwargs)
+
+    def update(self, dt: float) -> None:
+        if self._p:
+            self._p.update(self, dt)
+
+    def program_type(self) -> type:
+        return type(self._p)
+
+    @classmethod
+    def check_schedule(cls, when: dt.datetime) -> type:
+        night_begin, night_end = cls.night_time()
+        if night_begin <= when.time() <= night_end:
+            for program in cls.special_programs:
+                if program.is_scheduled(when):
+                    return program
+            return cls.default_program
+        return None
+
+    @classmethod
+    def night_time(cls) -> Tuple[dt.time, dt.time]:
+        return (dt.time(16), dt.time(23, 59, 59))
+
+    special_programs = [XMas]
+    default_program = DefaultProgram
