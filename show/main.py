@@ -13,8 +13,9 @@ class App(object):
         pass
 
     def __enter__(self):
-        self.leds = neopixel.NeoPixel(board.D18, 30 * 5, brightness=1, auto_write=False)
+        self.leds = neopixel.NeoPixel(board.D18, 30 * 5 - 1, brightness=1, auto_write=False)
         self._runner = ProgramRunner(self.leds)
+        self.clear_leds()
         self._next_check = dt.datetime.now()
         
         print("Starting LED control at {}".format(_now()))
@@ -31,7 +32,8 @@ class App(object):
             if now > self._next_check:
                 program_type = ProgramRunner.check_schedule(now)
                 if self._runner.program_type() != program_type:
-                    self._runner.start(program_type())
+                    self.clear_leds()
+                    self._runner.start(program_type() if program_type is not None else None)
                     self._start_time = time()
                     self._last_update = time()
                     print('It is {} ; lauching program type {}'.format(now, program_type))
