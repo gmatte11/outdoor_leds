@@ -10,6 +10,7 @@ from core import ProgramRunner
 
 class App(object):
     def __init__(self):
+        self._last_update = 0
         pass
 
     def __enter__(self):

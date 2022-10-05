@@ -31,13 +31,13 @@ class ProgramBase:
 
 class DefaultProgram(ProgramBase):
     @classmethod
-    def is_scheduled(cls, when: dt.datetime) -> bool:
+    def is_scheduled(cls, when: dt.date) -> bool:
         return True
 
 class XMas(ProgramBase):
     @classmethod
-    def is_scheduled(cls, when: dt.datetime) -> bool:
-        return dt.date(when.year, 12, 1) <= when.date() <= dt.date(when.year, 12, 28)
+    def is_scheduled(cls, when: dt.date) -> bool:
+        return dt.date(when.year, 12, 1) <= when <= dt.date(when.year, 12, 28)
 
     def start(self, runner: ProgramRunner, delay=20) -> None:
         n = runner.strip.n
@@ -58,8 +58,8 @@ class XMas(ProgramBase):
 
 class Halloween(ProgramBase):
     @classmethod
-    def is_scheduled(cls, when: dt.datetime):
-        return dt.date(when.year, 10, 1) <= when.date() <= dt.date(when.year, 11, 1)
+    def is_scheduled(cls, when: dt.date):
+        return dt.date(when.year, 10, 1) <= when <= dt.date(when.year, 10, 31)
 
     def start(self, runner: ProgramRunner, delay=20) -> None:
         n = runner.strip.n
@@ -119,17 +119,22 @@ class ProgramRunner:
 
     @classmethod
     def check_schedule(cls, when: dt.datetime) -> type:
-        night_begin, night_end = cls.night_time()
-        if night_begin <= when.time() <= night_end:
+        night_date = cls.to_programmed_time(when)
+        if night_date:
             for program in cls.special_programs:
-                if program.is_scheduled(when):
+                if program.is_scheduled(night_date):
                     return program
             return cls.default_program
         return None
 
     @classmethod
-    def night_time(cls) -> Tuple[dt.time, dt.time]:
-        return (dt.time(17, 0, 0), dt.time(23, 59, 59))
+    def to_programmed_time(cls, when: dt.datetime):
+        if (when.time() >= dt.time(17, 0, 0)):
+            return when.date();
+        elif (when.time() < dt.time(3, 0, 0)):
+            return dt.date(when.year, when.month, when.day - 1);
+        
+        return None 
 
     special_programs = [XMas, Halloween]
     default_program = DefaultProgram
