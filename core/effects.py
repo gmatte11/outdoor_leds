@@ -27,7 +27,7 @@ def color_train(length, gap, count, colors, timer = None):
         def launch(self, leds):
             size = length + gap
             self.carts = [x * -size for x in range(count)]
-            self.colors = [colors(x * (len(leds) // count)) for x in range(count)]
+            self.colors = [next(colors) for _ in range(count)]
 
         def reset(self):
             self.carts = None
