@@ -42,7 +42,7 @@ class XMas(ProgramBase):
     def start(self, runner: ProgramRunner, delay=20) -> None:
         n = runner.strip.n
         self._gen = itt.cycle((
-            #color_train(3, 2, n - 10, rainbow(20)),
+            #color_train(3, 2, n - 10, rainbow(n - 10, 20)),
             breath(itt.cycle([0xff0000, 0x00ff00]), .025),
         ))
         self._timer = EggClockTimer(delay)
@@ -64,8 +64,8 @@ class Halloween(ProgramBase):
     def start(self, runner: ProgramRunner, delay=20) -> None:
         n = runner.strip.n
         self._gen = itt.cycle((
-            #color_train(3, 2, n - 10, rainbow(20)),
-            breath(itt.cycle([0xdf1500]), .025),
+            color_train(6, 6, 8, itt.cycle([0xdf1500, 0x4b0f6e])),
+            breath(itt.cycle([0xdf1500]), .025)
         ))
         self._timer = EggClockTimer(delay)
         self._fx = next(self._gen)
