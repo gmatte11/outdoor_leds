@@ -7,7 +7,7 @@ from .colors import *
 from .utils import EggClockTimer
 import itertools as itt
 
-__all__ = ['ProgramRunner', 'XMas']
+__all__ = ['ProgramRunner', 'TestPrg']
 _now = dt.datetime.now
 
 _is_resettable = lambda obj: callable(getattr(obj, 'reset', None))
@@ -78,6 +78,27 @@ class Halloween(ProgramBase):
 
         self._fx(runner.strip)
 
+class TestPrg(ProgramBase):
+    @classmethod
+    def is_scheduled(cls, when: dt.datetime) -> bool:
+        return dt.date(when.year, 12, 1) <= when.date() <= dt.date(when.year, 12, 28)
+
+    def start(self, runner: ProgramRunner, delay=20) -> None:
+        n = runner.strip.n
+        self._gen = itt.cycle((
+            color_train(3, 2, n - 10, rainbow(n - 10, 20)),
+            breath(itt.cycle([0xff0000, 0x00ff00, 0x0000ff]), .25)
+        ))
+        self._timer = EggClockTimer(delay)
+        self._fx = next(self._gen)
+
+    def update(self, runner: ProgramRunner, dt: float) -> None:
+        if self._timer.expired():
+            self._fx = next(self._gen)
+            if _is_resettable(self._fx):
+                self._fx.reset()
+
+        self._fx(runner.strip)
 
 class ProgramRunner:
     def __init__(self, strip) -> None:

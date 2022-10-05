@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 from PySimpleGUI.PySimpleGUI import TIMEOUT_KEY
 from .mock_leds import *
-from core import ProgramRunner, XMas
+from core import ProgramRunner, TestPrg
 
 LED_COUNT=30
 
@@ -17,7 +17,7 @@ def run():
 
     strip = Strip(LED_COUNT)
     runner = ProgramRunner(strip)
-    runner.start(XMas(), delay = 3)
+    runner.start(TestPrg(), delay = 7)
 
     layout = [  [sg.Text("Rate:"), sg.In(key='Rate'), sg.Button('Set', key='SetRate')], 
                 leds(LED_COUNT),
@@ -38,6 +38,6 @@ def run():
 
         if event == TIMEOUT_KEY or event == 'Ok':
             refresh(wn, strip)
-            runner.update()
+            runner.update(float(rate) / 1000.)
             
     pass
