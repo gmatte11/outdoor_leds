@@ -11,6 +11,7 @@ __all__ = ['ProgramRunner', 'TestPrg']
 _now = dt.datetime.now
 
 _is_resettable = lambda obj: callable(getattr(obj, 'reset', None))
+_can_transition = lambda obj: callable(getattr(obj, 'can_transition', None))
 
 class ProgramRunner:
     pass
@@ -34,71 +35,68 @@ class DefaultProgram(ProgramBase):
     def is_scheduled(cls, when: dt.date) -> bool:
         return True
 
-class XMas(ProgramBase):
+    def start(self, runner: ProgramRunner) -> None:
+        self.strip.fill(0xffffff)
+
+    def end(self, runner: ProgramRunner) -> None:
+        self.strip.fill(0)
+
+class FxLoopProgram(ProgramBase):
+    def start(self, runner: ProgramRunner, delay=20) -> None:
+        self._gen = itt.cycle(self._createEffects(runner))
+        self._timer = EggClockTimer(delay)
+        self._fx = next(self._gen)
+
+    def update(self, runner: ProgramRunner, dt: float) -> None:
+        can_advance = True
+        if _can_transition(self._fx):
+            can_advance = self._fx.can_transition()
+
+        if can_advance and self._timer.expired():
+            self._fx = next(self._gen)
+            if _is_resettable(self._fx):
+                self._fx.reset()
+
+        self._fx(runner.strip)
+    
+
+class XMas(FxLoopProgram):
     @classmethod
     def is_scheduled(cls, when: dt.date) -> bool:
         return dt.date(when.year, 12, 1) <= when <= dt.date(when.year, 12, 28)
 
-    def start(self, runner: ProgramRunner, delay=20) -> None:
+    def _createEffects(self, runner: ProgramRunner) -> None:
         n = runner.strip.n
-        self._gen = itt.cycle((
+        return (
             #color_train(3, 2, n - 10, rainbow(n - 10, 20)),
             breath(itt.cycle([0xff0000, 0x00ff00]), .025),
-        ))
-        self._timer = EggClockTimer(delay)
-        self._fx = next(self._gen)
+        )
 
-    def update(self, runner: ProgramRunner, dt: float) -> None:
-        if self._timer.expired():
-            self._fx = next(self._gen)
-            if _is_resettable(self._fx):
-                self._fx.reset()
 
-        self._fx(runner.strip)
-
-class Halloween(ProgramBase):
+class Halloween(FxLoopProgram):
     @classmethod
     def is_scheduled(cls, when: dt.date):
         return dt.date(when.year, 10, 1) <= when <= dt.date(when.year, 10, 31)
 
-    def start(self, runner: ProgramRunner, delay=20) -> None:
+    def _createEffects(self, runner: ProgramRunner) -> None:
         n = runner.strip.n
-        self._gen = itt.cycle((
-            color_train(6, 6, 8, itt.cycle([0xdf1500, 0x4b0f6e])),
+        return (
+            color_train(6, 6, 16, itt.cycle([0xdf1500, 0x4b0f6e])),
             breath(itt.cycle([0xdf1500]), .025)
-        ))
-        self._timer = EggClockTimer(delay)
-        self._fx = next(self._gen)
+        )
 
-    def update(self, runner: ProgramRunner, dt: float) -> None:
-        if self._timer.expired():
-            self._fx = next(self._gen)
-            if _is_resettable(self._fx):
-                self._fx.reset()
 
-        self._fx(runner.strip)
-
-class TestPrg(ProgramBase):
+class TestPrg(FxLoopProgram):
     @classmethod
     def is_scheduled(cls, when: dt.datetime) -> bool:
         return dt.date(when.year, 12, 1) <= when.date() <= dt.date(when.year, 12, 28)
 
-    def start(self, runner: ProgramRunner, delay=20) -> None:
+    def _createEffects(self, runner: ProgramRunner) -> None:
         n = runner.strip.n
-        self._gen = itt.cycle((
+        return (
             color_train(3, 2, n - 10, rainbow(n - 10, 20)),
             breath(itt.cycle([0xff0000, 0x00ff00, 0x0000ff]), .25)
-        ))
-        self._timer = EggClockTimer(delay)
-        self._fx = next(self._gen)
-
-    def update(self, runner: ProgramRunner, dt: float) -> None:
-        if self._timer.expired():
-            self._fx = next(self._gen)
-            if _is_resettable(self._fx):
-                self._fx.reset()
-
-        self._fx(runner.strip)
+        )
 
 class ProgramRunner:
     def __init__(self, strip) -> None:
@@ -131,7 +129,7 @@ class ProgramRunner:
     def to_programmed_time(cls, when: dt.datetime):
         if (when.time() >= dt.time(17, 0, 0)):
             return when.date();
-        elif (when.time() < dt.time(3, 0, 0)):
+        elif (when.time() < dt.time(1, 0, 0)):
             return dt.date(when.year, when.month, when.day - 1);
         
         return None 

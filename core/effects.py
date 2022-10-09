@@ -26,11 +26,15 @@ def color_train(length, gap, count, colors, timer = None):
 
         def launch(self, leds):
             size = length + gap
+            self.striplen = len(leds)
             self.carts = [x * -size for x in range(count)]
             self.colors = [next(colors) for _ in range(count)]
 
         def reset(self):
             self.carts = None
+        
+        def can_transition(self):
+           return not self.carts or self.carts[-1] >= self.striplen + length or self.carts[0] <= 0
 
         def __call__(self, leds):
             if not self.carts:
@@ -42,7 +46,7 @@ def color_train(length, gap, count, colors, timer = None):
             leds.fill(0)
             for cart, color in zip(self.carts, self.colors):
                 if cart >= 0:
-                    for i in range(max(0, cart - length), min(cart, len(leds))):
+                    for i in range(max(0, cart - length), min(cart, self.striplen)):
                         leds[i] = color
 
             for i in range(len(self.carts)):
@@ -51,7 +55,7 @@ def color_train(length, gap, count, colors, timer = None):
 
             leds.show()
 
-            if self.carts[-1] > len(leds) + length:
+            if self.carts[-1] > self.striplen + length:
                 self.launch(leds)
 
     return _()
@@ -61,6 +65,9 @@ def breath(colors, speed, timer = None):
         def __init__(self):
             self._c = next(colors)
             self._t = 0.
+
+        def can_transition(self):
+            return self._t <= speed 
 
         @classmethod
         def _blend(cls, t: float, color):
