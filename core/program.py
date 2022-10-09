@@ -81,7 +81,7 @@ class Halloween(FxLoopProgram):
     def _createEffects(self, runner: ProgramRunner) -> None:
         n = runner.strip.n
         return (
-            color_train(6, 6, 16, itt.cycle([0xdf1500, 0x4b0f6e])),
+            color_train(6, 6, 16, itt.cycle([0xbf1500, 0x4b0f6e])),
             breath(itt.cycle([0xdf1500]), .025)
         )
 

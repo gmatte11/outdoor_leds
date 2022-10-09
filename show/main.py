@@ -7,8 +7,9 @@ import board
 import neopixel
 
 from core import ProgramRunner
+from .app_mutex import AppMutex
 
-class App(object):
+class App:
     def __init__(self):
         self._last_update = 0
         pass
@@ -52,5 +53,6 @@ class App(object):
         self.leds.show()
 
 def run():
-    with App() as app: 
-        app.run()
+    with AppMutex() as mutex:
+        with App() as app: 
+            app.run()
