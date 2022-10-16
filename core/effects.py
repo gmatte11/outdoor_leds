@@ -1,3 +1,4 @@
+import itertools as itt
 from .utils import EggClockTimer, split_color, recombine
 
 def train(n, repeat: int = 2, colors=lambda x: 0xff0000, off_colors = lambda x: 0, timer = None):
@@ -59,6 +60,33 @@ def color_train(length, gap, count, colors, timer = None):
                 self.launch(leds)
 
     return _()
+
+def rotate(colors, stop_frames):
+    class _():
+        def __init__(self):
+            self._c = colors
+            self._t = 0
+
+        def reset(self):
+            self._t = 0
+
+        @classmethod
+        def _fill(cls, leds, colors):
+            it = itt.cycle(colors)
+            for i in range(len(leds)):
+                leds[i] = next(it)
+
+        def __call__(self, leds):
+            if self._t <= 0 or stop_frames <= 0:
+                _._fill(leds, self._c)
+                self._c = self._c[1:] + [self._c[0]]
+                self._t = stop_frames
+            else:
+                self._t = self._t - 1
+
+
+    return _()
+
 
 def breath(colors, speed, timer = None):
     class _():

@@ -82,7 +82,8 @@ class Halloween(FxLoopProgram):
         n = runner.strip.n
         return (
             color_train(6, 6, 16, itt.cycle([0xbf1500, 0x4b0f6e])),
-            breath(itt.cycle([0xdf1500]), .025)
+            breath(itt.cycle([0xdf1500]), .025),
+            rotate([0x1aa800, 0xbf1500, 0x4b0f6e], 2),
         )
 
 
@@ -94,8 +95,9 @@ class TestPrg(FxLoopProgram):
     def _createEffects(self, runner: ProgramRunner) -> None:
         n = runner.strip.n
         return (
-            color_train(3, 2, n - 10, rainbow(n - 10, 20)),
-            breath(itt.cycle([0xff0000, 0x00ff00, 0x0000ff]), .25)
+            rotate([0x1aa800, 0xbf1500, 0x4b0f6e], 2),
+            #color_train(3, 2, n - 10, rainbow(n - 10, 20)),
+            #breath(itt.cycle([0xff0000, 0x00ff00, 0x0000ff]), .25)
         )
 
 class ProgramRunner:
