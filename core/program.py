@@ -36,10 +36,10 @@ class DefaultProgram(ProgramBase):
         return True
 
     def start(self, runner: ProgramRunner) -> None:
-        self.strip.fill(0xffffff)
+        self._fx = twinkle(0x909090, itt.cycle([0xa0a0f0, 0xa0f6f6, 0xf0a0f0, 0xf0f0a0]))
 
-    def end(self, runner: ProgramRunner) -> None:
-        self.strip.fill(0)
+    def update(self, runner: ProgramRunner, dt: float) -> None:
+        self._fx(runner.strip)
 
 class FxLoopProgram(ProgramBase):
     def start(self, runner: ProgramRunner, delay=20) -> None:
@@ -95,7 +95,7 @@ class TestPrg(FxLoopProgram):
     def _createEffects(self, runner: ProgramRunner) -> None:
         n = runner.strip.n
         return (
-            rotate([0x1aa800, 0xbf1500, 0x4b0f6e], 2),
+            twinkle(0x909090, rainbow(60, 20)),
             #color_train(3, 2, n - 10, rainbow(n - 10, 20)),
             #breath(itt.cycle([0xff0000, 0x00ff00, 0x0000ff]), .25)
         )

@@ -1,5 +1,9 @@
+from importlib.abc import FileLoader
 import itertools as itt
-from .utils import EggClockTimer, split_color, recombine
+import random as rnd
+
+from .utils import EggClockTimer, recombine, split_color
+
 
 def train(n, repeat: int = 2, colors=lambda x: 0xff0000, off_colors = lambda x: 0, timer = None):
     if type(repeat) is not int: raise AttributeError('repeat must be an integer')
@@ -119,6 +123,59 @@ def breath(colors, speed, timer = None):
             self._t += speed
 
             leds.fill(c)
+            leds.show()
+
+    return _()
+
+def twinkle(background_color, twinkle_colors):
+    _lifetime = 30
+    _bg_components = split_color(background_color)
+    min_ratio = max([x / 0xff for x in _bg_components])
+
+    class Spark:
+        def __init__(self):
+            self.t = _lifetime
+            self.c = next(twinkle_colors)
+
+        def _blend(self):
+            t = (_lifetime - self.t) / _lifetime
+            ratio = (t * t) / (2. * (t * t - t) + 1.)
+            if ratio < min_ratio:
+                return background_color
+            components = split_color(self.c)
+            return recombine([int(x * ratio) & 0xff for x in components])
+
+        def tick(self):
+            self.t -= 1
+            return self._blend()
+
+        def done(self):
+            return self.t <= 0
+
+    class _():
+        def __init__(self):
+            self._twinkles = {}
+
+        def __call__(self, leds):
+            leds.fill(background_color);
+
+            fillrate = len(self._twinkles) / len(leds)
+            if rnd.random() > 0.33 and fillrate < 0.75:
+                idx = rnd.randrange(len(leds))
+                while idx in self._twinkles:
+                    idx = rnd.randrange(len(leds))
+                
+                self._twinkles[idx] = Spark()
+
+            rem = []
+            for i, twkl in self._twinkles.items():
+                leds[i] = twkl.tick()
+                if twkl.done():
+                    rem.append(i)
+
+            for i in rem:
+                self._twinkles.pop(i)
+
             leds.show()
 
     return _()
