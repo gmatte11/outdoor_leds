@@ -83,7 +83,7 @@ class Halloween(FxLoopProgram):
         return (
             color_train(6, 6, 16, itt.cycle([0xbf1500, 0x4b0f6e])),
             breath(itt.cycle([0xdf1500]), .025),
-            rotate([0x1aa800, 0xbf1500, 0x4b0f6e], 2),
+            #rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
         )
 
 

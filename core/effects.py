@@ -65,7 +65,7 @@ def color_train(length, gap, count, colors, timer = None):
 
     return _()
 
-def rotate(colors, stop_frames):
+def rotate(colors, width=1, stop_frames=1):
     class _():
         def __init__(self):
             self._c = colors
@@ -77,8 +77,15 @@ def rotate(colors, stop_frames):
         @classmethod
         def _fill(cls, leds, colors):
             it = itt.cycle(colors)
+            c = next(it)
+            n = width
             for i in range(len(leds)):
-                leds[i] = next(it)
+                leds[i] = c
+                n = n - 1
+                if n == 0:
+                    c = next(it)
+                    n = width
+            leds.show()
 
         def __call__(self, leds):
             if self._t <= 0 or stop_frames <= 0:
