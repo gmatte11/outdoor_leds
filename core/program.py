@@ -36,7 +36,7 @@ class DefaultProgram(ProgramBase):
         return True
 
     def start(self, runner: ProgramRunner) -> None:
-        self._fx = twinkle(0x909090, itt.cycle([0xa0a0f0, 0xa0f6f6, 0xf0a0f0, 0xf0f0a0]))
+        self._fx = twinkle(0x101010, itt.cycle([0xa0a0f0, 0xa0f6f6, 0xf0a0f0, 0xf0f0a0]))
 
     def update(self, runner: ProgramRunner, dt: float) -> None:
         self._fx(runner.strip)

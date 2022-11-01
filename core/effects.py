@@ -135,7 +135,7 @@ def breath(colors, speed, timer = None):
     return _()
 
 def twinkle(background_color, twinkle_colors):
-    _lifetime = 30
+    _lifetime = 90
     _bg_components = split_color(background_color)
     min_ratio = max([x / 0xff for x in _bg_components])
 
@@ -167,7 +167,7 @@ def twinkle(background_color, twinkle_colors):
             leds.fill(background_color);
 
             fillrate = len(self._twinkles) / len(leds)
-            if rnd.random() > 0.33 and fillrate < 0.75:
+            if rnd.random() > 0.66 and fillrate < 0.75:
                 idx = rnd.randrange(len(leds))
                 while idx in self._twinkles:
                     idx = rnd.randrange(len(leds))
