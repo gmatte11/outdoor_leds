@@ -7,7 +7,7 @@ from .colors import *
 from .utils import EggClockTimer
 import itertools as itt
 
-__all__ = ['ProgramRunner', 'TestPrg']
+__all__ = ['ProgramRunner']
 _now = dt.datetime.now
 
 _is_resettable = lambda obj: callable(getattr(obj, 'reset', None))
@@ -86,19 +86,6 @@ class Halloween(FxLoopProgram):
             #rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
         )
 
-
-class TestPrg(FxLoopProgram):
-    @classmethod
-    def is_scheduled(cls, when: dt.datetime) -> bool:
-        return dt.date(when.year, 12, 1) <= when.date() <= dt.date(when.year, 12, 28)
-
-    def _createEffects(self, runner: ProgramRunner) -> None:
-        n = runner.strip.n
-        return (
-            twinkle(0x909090, rainbow(60, 20)),
-            #color_train(3, 2, n - 10, rainbow(n - 10, 20)),
-            #breath(itt.cycle([0xff0000, 0x00ff00, 0x0000ff]), .25)
-        )
 
 class ProgramRunner:
     def __init__(self, strip) -> None:

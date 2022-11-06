@@ -2,7 +2,7 @@ from importlib.abc import FileLoader
 import itertools as itt
 import random as rnd
 
-from .utils import EggClockTimer, recombine, split_color
+from .utils import EggClockTimer, recombine, split_color, mix, interpolate, fade
 
 
 def train(n, repeat: int = 2, colors=lambda x: 0xff0000, off_colors = lambda x: 0, timer = None):
@@ -108,16 +108,6 @@ def breath(colors, speed, timer = None):
         def can_transition(self):
             return self._t <= speed 
 
-        @classmethod
-        def _blend(cls, t: float, color):
-            ratio = (t * t) / (2. * (t * t - t) + 1.)
-            c = split_color(color)
-            return recombine([int(x * ratio) & 0xff for x in c])
-
-        @classmethod
-        def _to_blend_t(cls, t: float):
-            return 1. - (t - 1.) if t > 1. else t
-
         def __call__(self, leds):
             if timer and not timer.expired():
                 return
@@ -126,7 +116,7 @@ def breath(colors, speed, timer = None):
                 self._t = 0.
                 self._c = next(colors)
 
-            c = _._blend(_._to_blend_t(self._t), self._c)
+            c = fade(0, self._c, self._t, 1., 0., 1.)
             self._t += speed
 
             leds.fill(c)
@@ -136,31 +126,25 @@ def breath(colors, speed, timer = None):
 
 def twinkle(background_color, twinkle_colors):
     _lifetime = 90
-    _bg_components = split_color(background_color)
-    min_ratio = max([x / 0xff for x in _bg_components])
 
     class Spark:
         def __init__(self):
-            self.t = _lifetime
-            self.c = next(twinkle_colors)
-
-        def _blend(self):
-            t = (_lifetime - self.t) / _lifetime
-            ratio = (t * t) / (2. * (t * t - t) + 1.)
-            if ratio < min_ratio:
-                return background_color
-            components = split_color(self.c)
-            return recombine([int(x * ratio) & 0xff for x in components])
+            self._t = _lifetime
+            self._c = next(twinkle_colors)
 
         def tick(self):
-            self.t -= 1
-            return self._blend()
+            ratio = (_lifetime - self._t) / _lifetime
+            self._t -= 1
+            return fade(background_color, self._c, ratio, .45, .1, .45)
 
         def done(self):
-            return self.t <= 0
+            return self._t < 0
 
     class _():
         def __init__(self):
+            self.reset()
+
+        def reset(self):
             self._twinkles = {}
 
         def __call__(self, leds):

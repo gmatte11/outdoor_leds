@@ -1,7 +1,8 @@
 import PySimpleGUI as sg
 from PySimpleGUI.PySimpleGUI import TIMEOUT_KEY
 from .mock_leds import *
-from core import ProgramRunner, TestPrg
+from .mock_prg import TestPrg
+from core import ProgramRunner
 
 LED_COUNT=30
 
@@ -13,11 +14,11 @@ def refresh(wn: sg.Window, strip: Strip):
         wn[i].Widget.configure(background = str(strip[i]))
 
 def run():
-    rate=200
+    rate=60
 
     strip = Strip(LED_COUNT)
     runner = ProgramRunner(strip)
-    runner.start(TestPrg(), delay = 7)
+    runner.start(TestPrg(), delay = 30)
 
     layout = [  [sg.Text("Rate:"), sg.In(key='Rate'), sg.Button('Set', key='SetRate')], 
                 leds(LED_COUNT),
