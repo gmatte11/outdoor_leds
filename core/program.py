@@ -106,22 +106,33 @@ class ProgramRunner:
 
     @classmethod
     def check_schedule(cls, when: dt.datetime) -> type:
-        night_date = cls.to_programmed_time(when)
+        prg_type = None
+
+        night_date, next_check = cls.to_programmed_time(when)
         if night_date:
-            for program in cls.special_programs:
+            for program in cls._special_programs:
                 if program.is_scheduled(night_date):
-                    return program
-            return cls.default_program
-        return None
+                    prg_type = program
+
+            if prg_type is None:
+                prg_type = cls._default_program
+
+        return (prg_type, next_check)
 
     @classmethod
     def to_programmed_time(cls, when: dt.datetime):
-        if (when.time() >= dt.time(17, 0, 0)):
-            return when.date();
-        elif (when.time() < dt.time(1, 0, 0)):
-            return dt.date(when.year, when.month, when.day - 1);
-        
-        return None 
+        today = when.date()
 
-    special_programs = [XMas, Halloween]
-    default_program = DefaultProgram
+        if (when.time() >= cls._start_time):
+            tomorrow = today + dt.timedelta(days=1)
+            return (today, dt.datetime.combine(tomorrow, cls._end_time))
+        elif (when.time() < cls._end_time):
+            yesterday = today - dt.timedelta(days=1)
+            return (yesterday, dt.datetime.combine(today, cls._end_time))
+        else:
+            return (None, dt.datetime.combine(today, cls._start_time))
+
+    _start_time = dt.time(17, 0, 0)
+    _end_time = dt.time(1, 0, 0)
+    _default_program = DefaultProgram
+    _special_programs = [XMas, Halloween]
