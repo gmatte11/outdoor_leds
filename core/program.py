@@ -132,7 +132,7 @@ class ProgramRunner:
         else:
             return (None, dt.datetime.combine(today, cls._start_time))
 
-    _start_time = dt.time(17, 0, 0)
+    _start_time = dt.time(16, 30, 0)
     _end_time = dt.time(1, 0, 0)
     _default_program = DefaultProgram
     _special_programs = [XMas, Halloween]
