@@ -170,3 +170,36 @@ def twinkle(background_color, twinkle_colors):
             leds.show()
 
     return _()
+
+def firework(colors, rocket_size = 5):
+    class _:
+        def __init__(self):
+            self._t = 0
+            self._c = next(colors)
+            pass
+
+        def reset(self):
+            self._t = 0
+
+        def __call__(self, leds):
+            if (self._t >= len(leds) * 2):
+                self.reset()
+                self._c = next(colors)
+                leds.fill(0)
+
+            self._t += 1
+
+            # trail decay
+            for i in range(len(leds)):
+                if (rnd.random() > .5):
+                    leds[i] = fade(int(leds[i]), 0, .3, in_t = 1., out_t = 0.);
+
+            # rocket
+            for i in range(rocket_size):
+                idx = self._t - i
+                if (idx < len(leds)) and (idx >= 0):
+                    leds[idx] = self._c
+
+            # TODO explosion flash
+
+    return _()
