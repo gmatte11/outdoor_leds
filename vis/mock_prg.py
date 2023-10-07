@@ -11,7 +11,7 @@ class TestPrg(prg.FxLoopProgram):
         return {
             "breath": (fx.breath, ([0xff0000, 0x00ff00, 0x0000ff], .025)),
             "color_train": (fx.color_train, (3, 2, n - 10, clr.rainbow(n - 10, 20))),
-            "firework": (fx.firework, [0xffffff]),
+            "firework": (fx.firework, ([0x1234ff], 5)),
             "twinkle": (fx.twinkle, (0x909090, [0xffffff])),
         }
 
