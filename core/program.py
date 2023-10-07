@@ -46,6 +46,8 @@ class FxLoopProgram(ProgramBase):
         self._gen = itt.cycle(self._createEffects(runner))
         self._timer = EggClockTimer(delay)
         self._fx = next(self._gen)
+        if _is_resettable(self._fx):
+            self._fx.reset(runner)
 
     def update(self, runner: ProgramRunner, dt: float) -> None:
         can_advance = True
@@ -55,7 +57,7 @@ class FxLoopProgram(ProgramBase):
         if can_advance and self._timer.expired():
             self._fx = next(self._gen)
             if _is_resettable(self._fx):
-                self._fx.reset()
+                self._fx.reset(runner)
 
         self._fx(runner.strip)
     
@@ -69,7 +71,7 @@ class XMas(FxLoopProgram):
         n = runner.strip.n
         return (
             #color_train(3, 2, n - 10, rainbow(n - 10, 20)),
-            breath(itt.cycle([0xff0000, 0x00ff00]), .025),
+            breath([0xff0000, 0x00ff00], .025),
         )
 
 
@@ -81,8 +83,8 @@ class Halloween(FxLoopProgram):
     def _createEffects(self, runner: ProgramRunner) -> None:
         n = runner.strip.n
         return (
-            color_train(6, 6, 16, itt.cycle([0xbf1500, 0x4b0f6e])),
-            breath(itt.cycle([0xdf1500]), .025),
+            color_train(6, 6, 16, [0xbf1500, 0x4b0f6e]),
+            breath([0xdf1500], .025),
             #rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
         )
 
