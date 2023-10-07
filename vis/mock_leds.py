@@ -1,10 +1,11 @@
+from core.utils import split_color
 
 class Led:
     def __init__(self, idx):
        self.color = 0
        self.idx = idx
 
-    def to_int(self) -> int:
+    def as_int(self) -> int:
         if type(self.color) is int:
             return self.color
         elif type(self.color) is tuple:
@@ -16,15 +17,20 @@ class Led:
         else:
             raise TypeError("Unknown type")
 
+    def as_tuple(self):
+        if type(self.color) is tuple:
+            return self.color
+        elif type(self.color) is int:
+            return split_color(self.color)
 
     def __eq__(self, __o: object) -> bool:
         return self.color == __o
 
     def __int__(self) -> int:
-        return self.to_int()
+        return self.as_int()
 
     def __str__(self) -> str:
-        return '#{:06X}'.format(self.to_int())
+        return '#{:06X}'.format(self.as_int())
 
 class Strip:
     def __init__(self, count, brightness: float = 1.):
