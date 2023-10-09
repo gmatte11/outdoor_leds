@@ -7,7 +7,7 @@ import types
 from .program import ProgramRunner
 from .utils import *
 
-def color_train(length, gap, count, colors, timer = None):
+def color_train(length, gap, count, colors):
     _cycle = itt.cycle(colors)
 
     class _():
@@ -29,9 +29,6 @@ def color_train(length, gap, count, colors, timer = None):
         def __call__(self, leds):
             if not self.carts:
                 self.launch(leds)
-
-            if timer and not timer.expired():
-                return
 
             leds.fill(0)
             for cart, color in zip(self.carts, self.colors):
@@ -83,7 +80,7 @@ def rotate(colors, width=1, stop_frames=1):
 
     return _()
 
-def breath(colors, speed, timer = None):
+def breath(colors, speed):
     _cycle = itt.cycle(colors)
 
     class _():
@@ -95,9 +92,6 @@ def breath(colors, speed, timer = None):
             return self._t <= speed 
 
         def __call__(self, leds):
-            if timer and not timer.expired():
-                return
-
             if self._t >= 2.:
                 self._t = 0.
                 self._c = next(_cycle)

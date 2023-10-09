@@ -15,6 +15,14 @@ class TestPrg(prg.FxLoopProgram):
             "twinkle": (fx.twinkle, (0x909090, [0xffffff])),
         }
 
+    @classmethod
+    def programs(cls, runner: prg.ProgramRunner):
+        return {
+            'everyday': prg.DefaultProgram,
+            'XMas': prg.XMas,
+            'Halloween': prg.Halloween
+        }
+
     def __init__(self, effects):
         self._effects = effects
 

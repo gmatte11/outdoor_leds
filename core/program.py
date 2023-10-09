@@ -2,7 +2,7 @@ from abc import abstractclassmethod
 import datetime as dt
 from typing import Tuple, List
 
-from .effects import *
+import core.effects as fx
 from .colors import *
 from .utils import EggClockTimer
 import itertools as itt
@@ -36,7 +36,7 @@ class DefaultProgram(ProgramBase):
         return True
 
     def start(self, runner: ProgramRunner) -> None:
-        self._fx = twinkle(0x101010, itt.cycle([0xa0a0f0, 0xa0f6f6, 0xf0a0f0, 0xf0f0a0]))
+        self._fx = fx.twinkle(0x101010, itt.cycle([0xa0a0f0, 0xa0f6f6, 0xf0a0f0, 0xf0f0a0]))
 
     def update(self, runner: ProgramRunner, dt: float) -> None:
         self._fx(runner.strip)
@@ -71,7 +71,7 @@ class XMas(FxLoopProgram):
         n = runner.strip.n
         return (
             #color_train(3, 2, n - 10, rainbow(n - 10, 20)),
-            breath([0xff0000, 0x00ff00], .025),
+            fx.breath([0xff0000, 0x00ff00], .025),
         )
 
 
@@ -83,8 +83,8 @@ class Halloween(FxLoopProgram):
     def _createEffects(self, runner: ProgramRunner) -> None:
         n = runner.strip.n
         return (
-            color_train(6, 6, 16, [0xbf1500, 0x4b0f6e]),
-            breath([0xdf1500], .025),
+            fx.color_train(6, 6, 16, [0xbf1500, 0x4b0f6e]),
+            fx.breath([0xdf1500], .025),
             #rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
         )
 

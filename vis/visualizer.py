@@ -128,7 +128,7 @@ class ComboBox(object):
 
 
 def run():
-    window = init_window("TEST", (800, 600), None)
+    window = init_window("TEST", (640, 300), None)
 
     imgui.create_context()
     renderer = GlfwRenderer(window)
@@ -138,6 +138,9 @@ def run():
     current_running_idx = -1
 
     effects = TestPrg.effects(runner)
+    programs = TestPrg.programs(runner)
+
+    effects.update(programs)
     combo = ComboBox('effects', effects)
 
     freq = glfw.get_timer_frequency()
@@ -162,7 +165,10 @@ def run():
 
         if current_running_idx != combo.selected:
             fx = combo.get_value()
-            runner.start(TestPrg([fx]), delay=60)
+            if type(fx) is type:
+                runner.start(fx())
+            else:
+                runner.start(TestPrg([fx]), delay=20)
             current_running_idx = combo.selected
 
         gl.glClearColor(0, 0, 0, 1)
