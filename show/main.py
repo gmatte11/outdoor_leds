@@ -49,7 +49,7 @@ class App:
 
                 self._runner.update(dtime)
 
-            sleep(.05)
+            sleep(.0416) # about 24 fps
 
     def clear_leds(self):
         self.leds.fill(0)
