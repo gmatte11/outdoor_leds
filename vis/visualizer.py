@@ -15,6 +15,7 @@ from vis.mock_prg import TestPrg
 from core import ProgramRunner
 
 LED_COUNT = 30
+FRAMERATE = 24
 
 def rgba_from_components(components):
     u32 = components[2] << 16 | components[1] << 8 | components[0]
@@ -151,7 +152,7 @@ def run():
         glfw.poll_events()
         renderer.process_inputs()
 
-        runner.update(60.0 / 1000.0)
+        runner.update(float(FRAMERATE) / 1000.0)
 
         imgui.new_frame()
 
@@ -181,8 +182,8 @@ def run():
         imgui.end_frame()
 
         frame_ticks = glfw.get_timer_value() - start_ticks
-        while frame_ticks < (freq / 60):
-            time.sleep(max(float(freq / 60 - frame_ticks) / float(freq), 0))
+        while frame_ticks < (freq / FRAMERATE):
+            time.sleep(max(float(freq / FRAMERATE - frame_ticks) / float(freq), 0))
             frame_ticks = glfw.get_timer_value() - start_ticks
 
     renderer.shutdown()
