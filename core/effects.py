@@ -116,9 +116,6 @@ def wave(period, intensity_bounds, speed, colors):
             self._phase = 0.0
             self._c = next(_colors)
 
-        def reset(self, _):
-            self._phase = 0.0
-
         def __call__(self, leds, dt):
             n = len(leds)
             for i in range(n):
@@ -127,6 +124,7 @@ def wave(period, intensity_bounds, speed, colors):
                 leds[i] = interpolate(0x0, self._c, clamp(I, 0.0, 1.0))
 
             self._phase = self._phase + (speed * dt)
+            leds.show()
 
     return _();
 

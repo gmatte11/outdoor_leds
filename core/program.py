@@ -84,8 +84,8 @@ class Halloween(FxLoopProgram):
         n = runner.strip.n
         return (
             fx.color_train(6, 6, 16, [0xbf1500, 0x4b0f6e]),
-            fx.breath([0xdf1500], .025),
-            fx.wave(1.2, (0.5, 1.0), .7, [0x6611cc]),
+            fx.breath([0xdf1500, 0x2ccf18], .025),
+            fx.wave(1.2, (0.1, 0.8), .15, [0x6611cc]),
             #fx.rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
         )
 
