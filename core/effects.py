@@ -26,7 +26,7 @@ def color_train(length, gap, count, colors):
         def can_transition(self):
            return not self.carts or self.carts[-1] >= self.striplen + length or self.carts[0] <= 0
 
-        def __call__(self, leds):
+        def __call__(self, leds, dt):
             if not self.carts:
                 self.launch(leds)
 
@@ -69,7 +69,7 @@ def rotate(colors, width=1, stop_frames=1):
                     n = width
             leds.show()
 
-        def __call__(self, leds):
+        def __call__(self, leds, dt):
             if self._t <= 0 or stop_frames <= 0:
                 _._fill(leds, self._c)
                 self._c = self._c[1:] + [self._c[0]]
@@ -91,7 +91,7 @@ def breath(colors, speed):
         def can_transition(self):
             return self._t <= speed 
 
-        def __call__(self, leds):
+        def __call__(self, leds, dt):
             if self._t >= 2.:
                 self._t = 0.
                 self._c = next(_cycle)
@@ -103,6 +103,32 @@ def breath(colors, speed):
             leds.show()
 
     return _()
+
+def wave(period, intensity_bounds, speed, colors):
+    _colors = itt.cycle(colors)
+    
+    _mi, _ma = intensity_bounds
+    _amplitude = _ma - _mi;
+    _mod = period * 2 * math.pi
+
+    class _:
+        def __init__(self):
+            self._phase = 0.0
+            self._c = next(_colors)
+
+        def reset(self, _):
+            self._phase = 0.0
+
+        def __call__(self, leds, dt):
+            n = len(leds)
+            for i in range(n):
+                x = float(i) / float(n)
+                I = _amplitude * math.sin(_mod * (x + self._phase)) + _mi
+                leds[i] = interpolate(0x0, self._c, clamp(I, 0.0, 1.0))
+
+            self._phase = self._phase + (speed * dt)
+
+    return _();
 
 def twinkle(background_color, twinkle_colors):
     _lifetime = 90
@@ -128,7 +154,7 @@ def twinkle(background_color, twinkle_colors):
         def reset(self, _):
             self._twinkles = {}
 
-        def __call__(self, leds):
+        def __call__(self, leds, dt):
             leds.fill(background_color);
 
             fillrate = len(self._twinkles) / len(leds)
@@ -213,7 +239,7 @@ def firework(colors, rocket_size = 5):
                         leds[i] = interpolate(int(leds[i]), 0, rate);
             pass
 
-        def __call__(self, leds):
+        def __call__(self, leds, dt):
             self._t += 1
 
             rocket_time = self._timings.rocket_time

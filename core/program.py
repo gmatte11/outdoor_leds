@@ -39,7 +39,7 @@ class DefaultProgram(ProgramBase):
         self._fx = fx.twinkle(0x101010, itt.cycle([0xa0a0f0, 0xa0f6f6, 0xf0a0f0, 0xf0f0a0]))
 
     def update(self, runner: ProgramRunner, dt: float) -> None:
-        self._fx(runner.strip)
+        self._fx(runner.strip, dt)
 
 class FxLoopProgram(ProgramBase):
     def start(self, runner: ProgramRunner, delay=20) -> None:
@@ -59,7 +59,7 @@ class FxLoopProgram(ProgramBase):
             if _is_resettable(self._fx):
                 self._fx.reset(runner)
 
-        self._fx(runner.strip)
+        self._fx(runner.strip, dt)
     
 
 class XMas(FxLoopProgram):
@@ -85,7 +85,8 @@ class Halloween(FxLoopProgram):
         return (
             fx.color_train(6, 6, 16, [0xbf1500, 0x4b0f6e]),
             fx.breath([0xdf1500], .025),
-            #rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
+            fx.wave(1.2, (0.5, 1.0), .7, [0x6611cc]),
+            #fx.rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
         )
 
 

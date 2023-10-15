@@ -48,6 +48,9 @@ def recombine(*args):
 def clamp(val, low, high):
     return min(max(val, low), high)
 
+def lerp(a, b, t):
+    return (1 - t) * a + t * b
+
 def mix(color1, color2):
     c1 = split_color(color1)
     c2 = split_color(color2)
