@@ -75,21 +75,24 @@ def fade(color1, color2, t: float):
 
 class EggClockTimer:
     def __init__(self, timeout: float = 0.):
-        self.set_timeout(timeout)
+        self._time = 0.
+        self._timeout = timeout
 
-    def expired(self, relaunch: bool = True):
-        if self.start == 0:
-            return False
-
-        if (_now() - self.start) >= self.timeout:
-           self.start = _now() if relaunch else 0
-           return True
+    def expired(self, relaunch: bool = False):
+        if self._time >= self._timeout:
+            if relaunch:
+                self._time = 0.
+            return True
 
         return False
 
-    def reset(self):
-        self.start = _now() if self.timeout > 0 else 0
+    def expanded(self):
+        return self._time
 
-    def set_timeout(self, timeout: float):
-        self.timeout = float(timeout)
-        self.reset()
+    def __call__(self, dt):
+        self._time += dt
+
+    def reset(self, timeout = None):
+        self._time = 0.
+        if timeout is not None:
+            self._timeout = timeout

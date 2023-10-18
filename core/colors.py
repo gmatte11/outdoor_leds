@@ -1,6 +1,29 @@
 from .utils import wheel
 
-__all__ = ['rainbow']
+class StripBuffer:
+    def __init__(self, size: int):
+        self._n = size
+        self._buf = [0] * size 
+
+    def fill(self, color):
+        for i in range(self._n):
+            self._buf[i] = color
+
+    @property
+    def n(self) -> int:
+        self._n
+
+    def __iter__(self):
+        return self._buf.__iter__()
+
+    def __getitem__(self, idx):
+        return self._buf[idx]
+
+    def __setitem__(self, idx, val) -> None:
+        self._buf[idx] = val
+
+    def __len__(self) -> int:
+        return len(self._buf)
 
 class rainbow:
     def __init__(self, count, mod = 0): 

@@ -4,7 +4,7 @@ from typing import Tuple, List
 
 import core.effects as fx
 from .colors import *
-from .utils import EggClockTimer
+from .utils import EggClockTimer, fade, clamp
 import itertools as itt
 
 __all__ = ['ProgramRunner']
@@ -42,25 +42,47 @@ class DefaultProgram(ProgramBase):
         self._fx(runner.strip, dt)
 
 class FxLoopProgram(ProgramBase):
-    def start(self, runner: ProgramRunner, delay=20) -> None:
-        self._gen = itt.cycle(self._createEffects(runner))
+    def start(self, runner: ProgramRunner, delay=20, fade=3) -> None:
+        self._nextfx = None
+
         self._timer = EggClockTimer(delay)
+        self._transition_time = fade
+        self._effect_time = delay
+
+
+        self._gen = itt.cycle(self._createEffects(runner))
         self._fx = next(self._gen)
         if _is_resettable(self._fx):
             self._fx.reset(runner)
 
     def update(self, runner: ProgramRunner, dt: float) -> None:
-        can_advance = True
-        if _can_transition(self._fx):
-            can_advance = self._fx.can_transition()
+        self._timer(dt)
 
-        if can_advance and self._timer.expired():
-            self._fx = next(self._gen)
-            if _is_resettable(self._fx):
-                self._fx.reset(runner)
+        if self._nextfx is not None:
+            a = StripBuffer(runner.strip.n)
+            b = StripBuffer(runner.strip.n)
 
-        self._fx(runner.strip, dt)
-    
+            self._fx(a, dt)
+            self._nextfx(b, dt)
+
+            for idx, color_a, color_b in zip(range(len(a)), a, b):
+                runner.strip[idx] = fade(color_a, color_b, clamp(self._timer.expanded() / self._transition_time, 0., 1.))
+
+            if self._timer.expired():
+                self._timer.reset(self._effect_time)
+                if _is_resettable(self._fx):
+                    self._fx.reset(runner)
+                self._fx = self._nextfx
+                self._nextfx = None
+
+        else:
+            self._fx(runner.strip, dt)
+
+            if self._timer.expired():
+                #if not _can_transition(self._fx) or self._fx.can_transition():
+                    self._timer.reset(self._transition_time)
+                    self._nextfx = next(self._gen)
+
 
 class XMas(FxLoopProgram):
     @classmethod
