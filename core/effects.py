@@ -93,7 +93,11 @@ def breath(colors, speed):
                 self._t = 0.
                 self._c = next(_cycle)
 
-            c = fade(0, self._c, self._t, 1., 0., 1.)
+            if self._t < 1.:
+                c = fade(0, self._c, self._t)
+            else:
+                c = fade(self._c, 0, self._t - 1.)
+            
             self._t += speed
 
             leds.fill(c)

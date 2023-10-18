@@ -69,21 +69,9 @@ def interpolate(color1, color2, t: float):
         int(c1[1] * s + c2[1] * t),
         int(c1[2] * s + c2[2] * t))
 
-def fade(color1, color2, t: float, in_t=.5, keep_t=0., out_t=.5):
+def fade(color1, color2, t: float):
     ease = lambda t: (t * t) / (2. * (t * t - t) + 1.)
-
-    if t <= in_t:
-       return interpolate(color1, color2, ease(t / in_t))
-    
-    t -= in_t
-    if t <= keep_t:
-        return color2
-
-    t -= keep_t
-    if t > out_t:
-        return color1
-
-    return interpolate(color2, color1, ease(t / out_t))
+    return interpolate(color1, color2, ease(t))
 
 class EggClockTimer:
     def __init__(self, timeout: float = 0.):
