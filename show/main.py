@@ -26,7 +26,7 @@ class App:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.clear_leds()
+        self.leds.deinit()
         return (exc_type is None)
 
     def _update_schedule(self, when: dt.datetime):
