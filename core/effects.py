@@ -40,8 +40,6 @@ def color_train(length, gap, count, colors):
                 pos = self.carts[i] + 1
                 self.carts[i] = pos 
 
-            leds.show()
-
             if self.carts[-1] > self.striplen + length:
                 self.launch(leds)
 
@@ -67,7 +65,6 @@ def rotate(colors, width=1, stop_frames=1):
                 if n == 0:
                     c = next(it)
                     n = width
-            leds.show()
 
         def __call__(self, leds, dt):
             if self._t <= 0 or stop_frames <= 0:
@@ -100,7 +97,6 @@ def breath(colors, speed):
             self._t += speed
 
             leds.fill(c)
-            leds.show()
 
     return _()
 
@@ -124,7 +120,6 @@ def wave(period, intensity_bounds, speed, colors):
                 leds[i] = interpolate(0x0, self._c, clamp(I, 0.0, 1.0))
 
             self._phase = self._phase + (speed * dt)
-            leds.show()
 
     return _();
 
@@ -171,8 +166,6 @@ def twinkle(background_color, twinkle_colors):
 
             for i in rem:
                 self._twinkles.pop(i)
-
-            leds.show()
 
     return _()
 

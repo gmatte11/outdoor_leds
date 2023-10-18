@@ -103,6 +103,7 @@ class ProgramRunner:
     def update(self, dt: float) -> None:
         if self._p:
             self._p.update(self, dt)
+            self.strip.show()
 
     def program_type(self) -> type:
         return type(self._p) if self._p else None
