@@ -128,21 +128,22 @@ def wave(period, intensity_bounds, speed, colors):
     return _();
 
 def twinkle(background_color, twinkle_colors):
-    _lifetime = 90
+    _lifetime = 3.
     _colors = itt.cycle(twinkle_colors)
 
     class Spark:
         def __init__(self):
-            self._t = _lifetime
+            self._t = 0.
             self._c = next(_colors)
 
-        def tick(self):
-            ratio = (_lifetime - self._t) / _lifetime
-            self._t -= 1
+        def tick(self, dt):
+            ratio = self._t / _lifetime
+            ratio = (1. - ratio) * 2. if ratio > .5 else ratio * 2.
+            self._t += dt
             return fade(background_color, self._c, ratio)
 
         def done(self):
-            return self._t < 0
+            return self._t >= _lifetime
 
     class _():
         def __init__(self):
@@ -164,7 +165,7 @@ def twinkle(background_color, twinkle_colors):
 
             rem = []
             for i, twkl in self._twinkles.items():
-                leds[i] = twkl.tick()
+                leds[i] = twkl.tick(dt)
                 if twkl.done():
                     rem.append(i)
 
