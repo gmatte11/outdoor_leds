@@ -138,9 +138,9 @@ def twinkle(background_color, twinkle_colors):
 
         def tick(self, dt):
             ratio = self._t / _lifetime
-            ratio = (1. - ratio) * 2. if ratio > .5 else ratio * 2.
+            ratio = (1. - ratio) if ratio > .5 else ratio
             self._t += dt
-            return fade(background_color, self._c, ratio)
+            return fade(background_color, self._c, ratio / .5)
 
         def done(self):
             return self._t >= _lifetime
