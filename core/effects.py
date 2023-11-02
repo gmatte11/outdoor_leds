@@ -139,7 +139,7 @@ def twinkle(background_color, twinkle_colors):
         def tick(self):
             ratio = (_lifetime - self._t) / _lifetime
             self._t -= 1
-            return fade(background_color, self._c, ratio, .45, .1, .45)
+            return fade(background_color, self._c, ratio)
 
         def done(self):
             return self._t < 0
