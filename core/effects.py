@@ -93,14 +93,24 @@ def breath(colors, speed):
                 self._t = 0.
                 self._c = next(_cycle)
 
-            if self._t < 1.:
-                c = fade(0, self._c, self._t)
-            else:
-                c = fade(self._c, 0, self._t - 1.)
-            
-            self._t += speed
+            half = (leds.n + 1) >> 1
+            leds[half] = self._c
 
-            leds.fill(c)
+            for i in range(1, half):
+                inout = lambda t: (t if t < .5 else (1. - t)) * 2.
+
+                width = float(half + 2) * inout(self._t * .5)
+                t = lerp(1., 0., float(i) / width, lambda x: x * x * x) if i < int(width) else 0.
+
+                color = blend(0, self._c, t)
+
+                if half + i < leds.n:
+                    leds[half + i] = color
+
+                if i != 0 and half - i >= 0:
+                    leds[half - i] = color
+            
+            self._t += dt
 
     return _()
 
