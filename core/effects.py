@@ -121,7 +121,7 @@ def wave(period, intensity_bounds, speed, colors):
             for i in range(n):
                 x = float(i) / float(n)
                 I = _amplitude * math.sin(_mod * (x + self._phase)) + _mi
-                leds[i] = interpolate(0x0, self._c, clamp(I, 0.0, 1.0))
+                leds[i] = blend(0, self._c, clamp(I, 0.0, 1.0))
 
             self._phase = self._phase + (speed * dt)
 
@@ -203,7 +203,7 @@ def firework(colors, rocket_size = 5):
             for i in range(len(leds)):
                 rate = rnd.random()
                 if (rate < .5):
-                    leds[i] = interpolate(int(leds[i]), 0, rate);
+                    leds[i] = blend(int(leds[i]), 0, rate);
 
             # rocket
             for i in range(rocket_size):
@@ -223,7 +223,7 @@ def firework(colors, rocket_size = 5):
 
                 for i in range(clamp(math.floor(width), 0, len(leds))):
                     idx = len(leds) - i - 1
-                    leds[idx] = interpolate(self._c, interpolate(self._c, 0, .8), ease(float(width - idx) / width) - .5)
+                    leds[idx] = blend(self._c, blend(self._c, 0, .8), ease(float(width - idx) / width) - .5)
 
             elif t < self._timings.delay_time:
                 pass
@@ -232,7 +232,7 @@ def firework(colors, rocket_size = 5):
                 for i in range(len(leds)):
                     rate = rnd.random()
                     if (rate <= .25):
-                        leds[i] = interpolate(int(leds[i]), 0, rate);
+                        leds[i] = blend(int(leds[i]), 0, rate);
             pass
 
         def __call__(self, leds, dt):

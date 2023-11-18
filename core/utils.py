@@ -48,20 +48,15 @@ def recombine(*args):
 def clamp(val, low, high):
     return min(max(val, low), high)
 
-def lerp(a, b, t):
+def lerp(a, b, t, ease = None):
+    t = t if ease is None else ease(t)
     return (1 - t) * a + t * b
 
-def mix(color1, color2):
-    c1 = split_color(color1)
-    c2 = split_color(color2)
-    return recombine(
-        min(c1[0] + c2[0], 0xff),
-        min(c1[1] + c2[1], 0xff),
-        min(c1[2] + c2[2], 0xff))
-
-def interpolate(color1, color2, t: float):
+def blend(color1, color2, t: float, ease = None):
     t = clamp(t, 0., 1.)
+    t = t if ease is None else ease(t)
     s = 1. - t
+
     c1 = split_color(color1)
     c2 = split_color(color2)
     return recombine(
@@ -71,7 +66,7 @@ def interpolate(color1, color2, t: float):
 
 def fade(color1, color2, t: float):
     ease = lambda t: (t * t) / (2. * (t * t - t) + 1.)
-    return interpolate(color1, color2, ease(t))
+    return blend(color1, color2, ease(t))
 
 class EggClockTimer:
     def __init__(self, timeout: float = 0.):
