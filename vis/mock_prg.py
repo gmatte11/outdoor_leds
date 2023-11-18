@@ -29,5 +29,5 @@ class TestPrg(prg.FxLoopProgram):
         self._effects = effects
 
     def _createEffects(self, runner: prg.ProgramRunner):
-        return (fn(*args) for fn, args in self._effects)
+        return [fn(*args) for fn, args in self._effects]
 

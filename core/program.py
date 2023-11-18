@@ -43,45 +43,59 @@ class DefaultProgram(ProgramBase):
 
 class FxLoopProgram(ProgramBase):
     def start(self, runner: ProgramRunner, delay=20, fade=3) -> None:
+        self._gen = None
+        self._fx = None
         self._nextfx = None
 
-        self._timer = EggClockTimer(delay)
-        self._transition_time = fade
-        self._effect_time = delay
+        effects = self._createEffects(runner)
+        n = len(effects)
 
+        if n == 1:
+            self._fx = effects[0]
+        elif n > 1:
+            self._gen = itt.cycle()
+            self._fx = next(self._gen)
+            self._timer = EggClockTimer(delay)
+            self._transition_time = fade
+            self._effect_time = delay
 
-        self._gen = itt.cycle(self._createEffects(runner))
-        self._fx = next(self._gen)
         if _is_resettable(self._fx):
             self._fx.reset(runner)
 
     def update(self, runner: ProgramRunner, dt: float) -> None:
-        self._timer(dt)
+        self._update_timer(dt)
 
         if self._nextfx is not None:
-            a = StripBuffer(runner.strip.n)
-            b = StripBuffer(runner.strip.n)
-
-            self._fx(a, dt)
-            self._nextfx(b, dt)
-
-            for idx, color_a, color_b in zip(range(len(a)), a, b):
-                runner.strip[idx] = fade(color_a, color_b, clamp(self._timer.expanded() / self._transition_time, 0., 1.))
-
-            if self._timer.expired():
-                self._timer.reset(self._effect_time)
-                if _is_resettable(self._fx):
-                    self._fx.reset(runner)
-                self._fx = self._nextfx
-                self._nextfx = None
-
+            self._update_transition(runner, dt)
         else:
-            self._fx(runner.strip, dt)
+            if self._fx:
+                self._fx(runner.strip, dt)
 
-            if self._timer.expired():
+            if self._gen and self._timer.expired():
                 #if not _can_transition(self._fx) or self._fx.can_transition():
                     self._timer.reset(self._transition_time)
                     self._nextfx = next(self._gen)
+
+    def _update_timer(self, dt):
+        if self._gen:
+            self._timer(dt)
+
+    def _update_transition(self, runner, dt):
+        a = StripBuffer(runner.strip.n)
+        b = StripBuffer(runner.strip.n)
+
+        self._fx(a, dt)
+        self._nextfx(b, dt)
+
+        for idx, color_a, color_b in zip(range(len(a)), a, b):
+            runner.strip[idx] = fade(color_a, color_b, clamp(self._timer.expanded() / self._transition_time, 0., 1.))
+
+        if self._timer.expired():
+            self._timer.reset(self._effect_time)
+            if _is_resettable(self._fx):
+                self._fx.reset(runner)
+            self._fx = self._nextfx
+            self._nextfx = None
 
 
 class XMas(FxLoopProgram):
@@ -89,12 +103,12 @@ class XMas(FxLoopProgram):
     def is_scheduled(cls, when: dt.date) -> bool:
         return dt.date(when.year, 12, 1) <= when <= dt.date(when.year, 12, 28)
 
-    def _createEffects(self, runner: ProgramRunner) -> None:
+    def _createEffects(self, runner: ProgramRunner):
         n = runner.strip.n
-        return (
+        return [
             #color_train(3, 2, n - 10, rainbow(n - 10, 20)),
             fx.breath([0xff0000, 0x00ff00], .025),
-        )
+        ]
 
 
 class Halloween(FxLoopProgram):
@@ -102,14 +116,14 @@ class Halloween(FxLoopProgram):
     def is_scheduled(cls, when: dt.date):
         return dt.date(when.year, 10, 1) <= when <= dt.date(when.year, 10, 31)
 
-    def _createEffects(self, runner: ProgramRunner) -> None:
+    def _createEffects(self, runner: ProgramRunner):
         n = runner.strip.n
-        return (
+        return [
             fx.color_train(6, 6, 16, [0xbf1500, 0x4b0f6e]),
             fx.breath([0xdf1500, 0x2ccf18], .025),
             fx.wave(1.2, (0.1, 0.8), .15, [0x6611cc]),
             #fx.rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
-        )
+        ]
 
 
 class ProgramRunner:
