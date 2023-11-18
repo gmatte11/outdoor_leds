@@ -11,7 +11,7 @@ class StripBuffer:
 
     @property
     def n(self) -> int:
-        self._n
+        return self._n
 
     def __iter__(self):
         return self._buf.__iter__()

@@ -4,7 +4,7 @@ from typing import Tuple, List
 
 import core.effects as fx
 from .colors import *
-from .utils import EggClockTimer, fade, clamp
+from .utils import EggClockTimer, blend, clamp
 import itertools as itt
 
 __all__ = ['ProgramRunner']
@@ -53,7 +53,7 @@ class FxLoopProgram(ProgramBase):
         if n == 1:
             self._fx = effects[0]
         elif n > 1:
-            self._gen = itt.cycle()
+            self._gen = itt.cycle(effects)
             self._fx = next(self._gen)
             self._timer = EggClockTimer(delay)
             self._transition_time = fade
@@ -87,8 +87,9 @@ class FxLoopProgram(ProgramBase):
         self._fx(a, dt)
         self._nextfx(b, dt)
 
+        cubic = lambda x: x * x * x
         for idx, color_a, color_b in zip(range(len(a)), a, b):
-            runner.strip[idx] = fade(color_a, color_b, clamp(self._timer.expanded() / self._transition_time, 0., 1.))
+            runner.strip[idx] = blend(color_a, color_b, clamp(self._timer.expanded() / self._transition_time, 0., 1.), cubic)
 
         if self._timer.expired():
             self._timer.reset(self._effect_time)
