@@ -188,11 +188,10 @@ def firework(colors, rocket_size = 5):
     _cycle = itt.cycle(colors)
     _rocket_speed = 40.
 
-    _explosion_delay = .8
-    _explosion_time = 1.5
-    _decay_time = 3.
+    _particleLifetime = (1., 3.)
+    _particleVelocity = (5., 60.)
 
-    def _decay_f(value, threshold = .5):
+    def _decay(value, threshold = .5):
         rate = rnd.random()
         if rate <= threshold:
             return lerp(value, 0., rate)
@@ -210,66 +209,52 @@ def firework(colors, rocket_size = 5):
             self._t += dt
             self._front = int(self._t * _rocket_speed)
 
-            # rocket
             l = clamp(self._front - rocket_size, 0, sz + 1)
             h = clamp(self._front, 0, sz)
 
             if h > l:
                 trail[l:h] = [1.] * (h - l)
             
-            # trail decay
-            if self._front > rocket_size:
-                h = clamp(l, 0, sz)
-                trail[0:h] = [_decay_f(v) for v in trail[0:h]]
-
-
         def done(self):
             return self._front >= self._target
 
-    class _explosion:
+    class _particle:
         def __init__(self):
             self._t = 0.
-            pass
+            self._lifetime = rnd.uniform(*_particleLifetime)
+            self._velocity = rnd.uniform(*_particleVelocity)
+            self._pos = 0.
 
         def tick(self, trail, dt):
-            sz = len(trail)
             self._t += dt
+            self._pos += self._velocity * dt
+            self._velocity -= 0.5 * self._velocity * dt
 
-            if self._t < _explosion_delay:
-                return
+            ease = lambda x: x * x * x
 
-            t = self._t - _explosion_delay
+            idx = int(math.floor(self._pos))
+            if 0 < idx <= len(trail):
+                trail[-idx] = 1. * (1. - ease(self._t / self._lifetime))
 
-            if t < _explosion_time:
-                ease = lambda x: 1. - pow((1 - x), 5) 
-                elastic = lambda x: 2 ** (-10 * x) * math.sin((x * 10 - .75) * (math.tau / 3)) + 1 if 0. < x < 1. else clamp(x, 0., 1.)
-
-                max_width = float(sz) * .9
-                width = elastic(t / (_explosion_time * 3.)) * max_width
-
-                h = clamp(int(width), 0, sz)
-
-                if h > 0:
-                    trail[::-1] = [ease((width - float(x)) / width) if float(x) < width else 0. for x in range(sz)]
-            else:
-                trail[:] = [_decay_f(x, .02) for x in trail]
-
+            if idx > len(trail):
+                self._t = self._lifetime
             pass
 
         def done(self):
-            return self._t >= _explosion_delay + _explosion_time + _decay_time
+            return self._t >= self._lifetime
 
     class _:
         def __init__(self):
             self._rocket = None
-            self._explosion = None
+            self._particles = None
+            self._trail = None
 
         def reset(self, runner: ProgramRunner):
             if runner:
                 self._trail = [0.] * runner.strip.n
 
             self._rocket = _rocket(len(self._trail))
-            self._explosion = None
+            self._particles = None
             self._c = next(_cycle)
             self._dir = 1 if rnd.randint(0, 1) == 0 else -1
 
@@ -278,18 +263,28 @@ def firework(colors, rocket_size = 5):
             return self._rocket == self._explosion == None
 
         def __call__(self, leds, dt):
-            self._rocket.tick(self._trail, dt)
+            #trail decay
+            self._trail[:] = [_decay(x, .4) for x in self._trail]
 
-            if self._explosion is None:
+            if not self._rocket.done():
+                self._rocket.tick(self._trail, dt)
+
                 if self._rocket.done():
-                    self._explosion = _explosion()
+                    self._particles = [_particle() for x in range(rnd.randint(4, 9))]
 
-            else:
-                self._explosion.tick(self._trail, dt)
+            if self._particles:
+                fully_done = True
+                for p in self._particles:
+                    done = p.done()
+                    fully_done = fully_done if done else False
+                    if not done:
+                        p.tick(self._trail, dt)
 
-                if self._explosion.done():
+                if fully_done:
                     self.reset(None)
+                    self._trail = [0.] * leds.n
                     leds.fill(0)
+                    return
 
             it = iter(self._trail)
             for i in range(0, leds.n)[::self._dir]:
