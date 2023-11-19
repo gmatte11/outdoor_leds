@@ -186,77 +186,113 @@ def twinkle(background_color, twinkle_colors):
 
 def firework(colors, rocket_size = 5):
     _cycle = itt.cycle(colors)
+    _rocket_speed = 40.
+
+    _explosion_delay = .8
+    _explosion_time = 1.5
+    _decay_time = 3.
+
+    def _decay_f(value, threshold = .5):
+        rate = rnd.random()
+        if rate <= threshold:
+            return lerp(value, 0., rate)
+        return value
+
+    class _rocket:
+        def __init__(self, trail_size):
+            self._t = 0.
+            self._front = 0
+            self._target = trail_size + rocket_size
+            pass
+
+        def tick(self, trail, dt):
+            sz = len(trail)
+            self._t += dt
+            self._front = int(self._t * _rocket_speed)
+
+            # rocket
+            l = clamp(self._front - rocket_size, 0, sz + 1)
+            h = clamp(self._front, 0, sz)
+
+            if h > l:
+                trail[l:h] = [1.] * (h - l)
+            
+            # trail decay
+            if self._front > rocket_size:
+                h = clamp(l, 0, sz)
+                trail[0:h] = [_decay_f(v) for v in trail[0:h]]
+
+
+        def done(self):
+            return self._front >= self._target
+
+    class _explosion:
+        def __init__(self):
+            self._t = 0.
+            pass
+
+        def tick(self, trail, dt):
+            sz = len(trail)
+            self._t += dt
+
+            if self._t < _explosion_delay:
+                return
+
+            t = self._t - _explosion_delay
+
+            if t < _explosion_time:
+                ease = lambda x: 1. - pow((1 - x), 5) 
+                elastic = lambda x: 2 ** (-10 * x) * math.sin((x * 10 - .75) * (math.tau / 3)) + 1 if 0. < x < 1. else clamp(x, 0., 1.)
+
+                max_width = float(sz) * .9
+                width = elastic(t / (_explosion_time * 3.)) * max_width
+
+                h = clamp(int(width), 0, sz)
+
+                if h > 0:
+                    trail[::-1] = [ease((width - float(x)) / width) if float(x) < width else 0. for x in range(sz)]
+            else:
+                trail[:] = [_decay_f(x, .02) for x in trail]
+
+            pass
+
+        def done(self):
+            return self._t >= _explosion_delay + _explosion_time + _decay_time
 
     class _:
         def __init__(self):
-            self._t = 0
-            self._c = next(_cycle)
-            pass
+            self._rocket = None
+            self._explosion = None
 
         def reset(self, runner: ProgramRunner):
-            self._t = 0
-
             if runner:
-                leds = runner.strip
-                self._timings = types.SimpleNamespace();
-                self._timings.rocket_time = len(leds) + math.ceil(rocket_size * 1.3)
-                self._timings.flash_time = 5
-                self._timings.delay_time = self._timings.flash_time + 2
-                self._timings.decay_time = self._timings.delay_time + 15
-                self._timings.total_time = self._timings.rocket_time + self._timings.decay_time
+                self._trail = [0.] * runner.strip.n
+
+            self._rocket = _rocket(len(self._trail))
+            self._explosion = None
+            self._c = next(_cycle)
+            self._dir = 1 if rnd.randint(0, 1) == 0 else -1
+
 
         def can_transition(self):
-            return self._t == 0
-
-        def _rocket(self, leds, t):
-            # trail decay
-            for i in range(len(leds)):
-                rate = rnd.random()
-                if (rate < .5):
-                    leds[i] = blend(int(leds[i]), 0, rate);
-
-            # rocket
-            for i in range(rocket_size):
-                idx = t - i
-                if 0 <= idx < len(leds):
-                    leds[idx] = self._c
-
-        def _explosion(self, leds, t):
-            ease = lambda x: 1 - (1 - x) * (1 - x)
-            elastic = lambda x: 2 ** (-10 * x) * math.sin((x * 10 - .75) * (math.tau / 3)) + 1 if 0. < x < 1. else clamp(x, 0., 1.)
-
-            flash_time = self._timings.flash_time
-
-            if t < flash_time:
-                max_width = len(leds) * .7
-                width = elastic(float(t) / flash_time) * max_width
-
-                for i in range(clamp(math.floor(width), 0, len(leds))):
-                    idx = len(leds) - i - 1
-                    leds[idx] = blend(self._c, blend(self._c, 0, .8), ease(float(width - idx) / width) - .5)
-
-            elif t < self._timings.delay_time:
-                pass
-
-            else:
-                for i in range(len(leds)):
-                    rate = rnd.random()
-                    if (rate <= .25):
-                        leds[i] = blend(int(leds[i]), 0, rate);
-            pass
+            return self._rocket == self._explosion == None
 
         def __call__(self, leds, dt):
-            self._t += 1
+            self._rocket.tick(self._trail, dt)
 
-            rocket_time = self._timings.rocket_time
+            if self._explosion is None:
+                if self._rocket.done():
+                    self._explosion = _explosion()
 
-            if (self._t < rocket_time):
-                self._rocket(leds, self._t)
-            elif (self._t < self._timings.total_time):
-                self._explosion(leds, self._t - rocket_time)
             else:
-                self.reset(None)
-                self._c = next(_cycle)
-                leds.fill(0)
+                self._explosion.tick(self._trail, dt)
+
+                if self._explosion.done():
+                    self.reset(None)
+                    leds.fill(0)
+
+            it = iter(self._trail)
+            for i in range(0, leds.n)[::self._dir]:
+                leds[i] = blend(0, self._c, next(it))
                 
     return _()
