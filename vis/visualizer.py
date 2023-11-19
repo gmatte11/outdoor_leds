@@ -14,7 +14,7 @@ from vis.mock_leds import *
 from vis.mock_prg import TestPrg
 from core import ProgramRunner
 
-LED_COUNT = 30
+LED_COUNT = 60
 FRAMERATE = 24
 
 def rgba_from_components(components):
@@ -65,7 +65,7 @@ def init_window(name, size, opts):
     return window
 
 def led_graph(name, leds):
-        with imgui.begin_child(name, 600, 200, border=False, flags=imgui.WINDOW_NO_SCROLLBAR):
+        with imgui.begin_child(name, 20 * len(leds), 200, border=False, flags=imgui.WINDOW_NO_SCROLLBAR):
 
             dl = imgui.get_window_draw_list()
             wp = imgui.get_window_position()
@@ -129,7 +129,7 @@ class ComboBox(object):
 
 
 def run():
-    window = init_window("TEST", (640, 300), None)
+    window = init_window("TEST", (1200, 300), None)
 
     imgui.create_context()
     renderer = GlfwRenderer(window)
@@ -162,7 +162,7 @@ def run():
         with imgui.begin('WINDOW', flags=imgui.WINDOW_NO_TITLE_BAR | imgui.WINDOW_NO_RESIZE | imgui.WINDOW_NO_MOVE | imgui.WINDOW_MENU_BAR):
 
             combo()
-            led_graph('##leds', strip)
+            led_graph('##leds', strip.items())
 
         if current_running_idx != combo.selected:
             fx = combo.get_value()

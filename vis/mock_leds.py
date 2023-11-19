@@ -53,11 +53,14 @@ class Strip:
     def n(self) -> int:
         return self._n
 
+    def items(self):
+        return self._track
+
     def __iter__(self):
         return self._track.__iter__()
 
-    def __getitem__(self, idx) -> Led:
-        return self._track[idx]
+    def __getitem__(self, idx):
+        return self._track[idx].color
 
     def __setitem__(self, idx, val) -> None:
         self._track[idx].color = val
