@@ -188,8 +188,9 @@ def firework(colors, rocket_size = 5):
     _cycle = itt.cycle(colors)
     _rocket_speed = 40.
 
-    _particleLifetime = (1., 3.)
-    _particleVelocity = (5., 60.)
+    _particleLifetime = (3., 7.)
+    _particleVelocity = (20., 90.)
+    _particleCount = (4, 12)
 
     def _decay(value, threshold = .5):
         rate = rnd.random()
@@ -264,13 +265,13 @@ def firework(colors, rocket_size = 5):
 
         def __call__(self, leds, dt):
             #trail decay
-            self._trail[:] = [_decay(x, .4) for x in self._trail]
+            self._trail[:] = [_decay(x, .5) for x in self._trail]
 
             if not self._rocket.done():
                 self._rocket.tick(self._trail, dt)
 
                 if self._rocket.done():
-                    self._particles = [_particle() for x in range(rnd.randint(4, 9))]
+                    self._particles = [_particle() for x in range(rnd.randint(*_particleCount))]
 
             if self._particles:
                 fully_done = True
