@@ -107,8 +107,9 @@ class XMas(FxLoopProgram):
     def _createEffects(self, runner: ProgramRunner):
         n = runner.strip.n
         return [
-            #color_train(3, 2, n - 10, rainbow(n - 10, 20)),
-            fx.breath([0xff0000, 0x00ff00], .025),
+            fx.twinkle(0x101010, [0x8100db, 0x1e7c20, 0x0037fb, 0xb60000, 0xdf6500]),
+            fx.color_train(3, 2, n - 10, rainbow(n - 10, 20)),
+            #fx.breath([0xff0000, 0x00ff00], .015),
         ]
 
 
