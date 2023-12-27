@@ -184,7 +184,7 @@ def twinkle(background_color, twinkle_colors):
 
     return _()
 
-def firework(colors, rocket_size = 5):
+def firework_rocket(colors, rocket_size = 5):
     _cycle = itt.cycle(colors)
     _rocket_speed = 40.
 
@@ -292,3 +292,68 @@ def firework(colors, rocket_size = 5):
                 leds[i] = blend(0, self._c, next(it))
                 
     return _()
+
+def firework_explosion(colors, max_ratio = .90):
+    _particleLifetime = (3., 7.)
+    _particleVelocity = (1., 20.)
+    _particleCount = (4, 12)
+
+    class _particle:
+        def __init__(self, color, pos, vel):
+            self._c = color
+            self._t = 0.
+            self._lifetime = rnd.uniform(*_particleLifetime)
+            self._velocity = vel 
+            self._pos = float(pos)
+
+        _ease = lambda x: x * x * x
+
+        def tick(self, leds, dt):
+            self._pos += self._velocity * dt
+            self._velocity -= 0.5 * self._velocity * dt
+
+            idx = int(math.floor(self._pos))
+            if 0 < idx < len(leds):
+                fade_ratio = self._t / self._lifetime
+                leds[idx] = blend_max(leds[idx], blend(self._c, (0) * 3, fade_ratio, _particle._ease))
+            else:
+                self._t = self._lifetime
+
+            self._t += dt
+
+        def done(self):
+            return self._t >= self._lifetime
+
+
+    class _:
+        def __init__(self):
+            self._particles = []
+            pass
+
+        def reset(self, runner: ProgramRunner):
+            self._particles = []
+
+        def __call__(self, leds, dt):
+            strip = [0] * leds.n
+
+            if (float(len(self._particles)) / leds.n) < max_ratio:
+                if rnd.random() < .3:
+                    center = rnd.randint(5, leds.n - 5)
+                    count = rnd.randint(*_particleCount)
+
+                    for i in range(count):
+                        c = rnd.choice(colors)
+                        vel = rnd.uniform(*_particleVelocity)
+                        self._particles += [ _particle(c, center, vel), _particle(c, center, -vel) ]
+                    pass
+
+            for p in self._particles:
+                p.tick(strip, dt)
+
+            self._particles = [p for p in self._particles if not p.done()]
+
+            leds[:] = strip[:]
+
+    return _()
+
+

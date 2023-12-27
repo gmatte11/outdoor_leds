@@ -127,6 +127,16 @@ class Halloween(FxLoopProgram):
             #fx.rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
         ]
 
+class NewYear(FxLoopProgram):
+    @classmethod
+    def is_scheduled(cls, when: dt.date):
+        return dt.date(when.year, 12, 31) <= when <= dt.date(when.year + 1, 1, 1)
+
+    def _createEffects(self, runner: ProgramRunner):
+        return [
+            fx.firework_explosion(rainbow(28)),
+            fx.firework_rocket(rainbow(14)),
+        ]
 
 class ProgramRunner:
     def __init__(self, strip) -> None:

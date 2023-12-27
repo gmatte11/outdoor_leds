@@ -1,4 +1,5 @@
 from core.utils import split_color
+from collections.abc import Sequence
 
 class Led:
     def __init__(self, idx):
@@ -32,7 +33,7 @@ class Led:
     def __str__(self) -> str:
         return '#{:06X}'.format(self.as_int())
 
-class Strip:
+class Strip(Sequence):
     def __init__(self, count, brightness: float = 1.):
         self._n = count
         self.brightness = brightness
@@ -45,7 +46,6 @@ class Strip:
         for l in self._track:
             l.color = color
         
-
     def deinit(self) -> None:
         self.fill(0)
 
@@ -63,7 +63,11 @@ class Strip:
         return self._track[idx].color
 
     def __setitem__(self, idx, val) -> None:
-        self._track[idx].color = val
+        if type(idx) is slice:
+            for l, r in zip(self._track[idx], val):
+               l.color = r 
+        else:
+            self._track[idx].color = val
 
     def __len__(self) -> int:
         return len(self._track)

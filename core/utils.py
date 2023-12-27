@@ -1,24 +1,5 @@
 from time import time as _now
 
-def wheel(p):
-    if p < 0 or p > 255:
-        r = g = b = 0
-    elif p < 85:
-        r = int(p * 3)
-        g = int(255 - p * 3)
-        b = 0
-    elif p < 170:
-        p -= 85
-        r = int(255 - p * 3)
-        g = 0
-        b = int(p * 3)
-    else:
-        p -= 170
-        r = 0
-        g = int(p * 3)
-        b = int(255 - p * 3)
-    return (r, g, b)
-
 def split_color(c, width=3):
     if type(c) is int:
         if width == 3:
@@ -31,19 +12,15 @@ def split_color(c, width=3):
         return c
 
 def recombine(*args):
-    c = args
-    if len(c) == 1:
-        c = c[0]
-
-    if type(c) in (list, tuple):
-        if len(c) == 4:
-            return (c[0] & 0xff) << 24 | (c[1] & 0xff) << 16 | (c[2] & 0xff) << 8 | (c[3] & 0xff)
-        elif len(c) == 3:
-            return (c[0] & 0xff) << 16 | (c[1] & 0xff) << 8 | (c[2] & 0xff)
-        else:
-            raise
+    if len(args) == 1:
+        return args[0]
+    elif len(args) == 4:
+        return (args[0] & 0xff) << 24 | (args[1] & 0xff) << 16 | (args[2] & 0xff) << 8 | (args[3] & 0xff)
+    elif len(args) == 3:
+        return (args[0] & 0xff) << 16 | (args[1] & 0xff) << 8 | (args[2] & 0xff)
     else:
-        return c
+        raise
+    
 
 def clamp(val, low, high):
     return min(max(val, low), high)
@@ -63,6 +40,15 @@ def blend(color1, color2, t: float, ease = None):
         int(c1[0] * s + c2[0] * t),
         int(c1[1] * s + c2[1] * t),
         int(c1[2] * s + c2[2] * t))
+
+def blend_max(color1, color2):
+    c1 = split_color(color1)
+    c2 = split_color(color2)
+    return recombine(\
+        max(c1[0], c2[0]),
+        max(c1[1], c2[1]),
+        max(c1[2], c2[2]))
+
 
 def fade(color1, color2, t: float):
     ease = lambda t: (t * t) / (2. * (t * t - t) + 1.)

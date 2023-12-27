@@ -11,7 +11,8 @@ class TestPrg(prg.FxLoopProgram):
         return {
             "breath": (fx.breath, ([0xff0000, 0x00ff00, 0x0000ff], .025)),
             "color_train": (fx.color_train, (3, 2, n - 10, clr.rainbow(n - 10, 20))),
-            "firework": (fx.firework, ([0x12ff34, 0xff3412, 0x1234ff], 5)),
+            "firework_rocket": (fx.firework_rocket, ([0x12ff34, 0xff3412, 0x1234ff], 5)),
+            "firework_explosion": (fx.firework_explosion, ([0x12ff34, 0xff3412, 0x1234ff],)),
             "rotate": (fx.rotate, ([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3)),
             "twinkle": (fx.twinkle, (0x909090, [0xffffff])),
             "wave": (fx.wave, (1.2, (0.5, 1.0), .7, [0x6611cc]))
@@ -22,7 +23,8 @@ class TestPrg(prg.FxLoopProgram):
         return {
             'everyday': prg.DefaultProgram,
             'XMas': prg.XMas,
-            'Halloween': prg.Halloween
+            'Halloween': prg.Halloween,
+            'New Year': prg.NewYear,
         }
 
     def __init__(self, effects):
