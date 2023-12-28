@@ -42,7 +42,7 @@ class DefaultProgram(ProgramBase):
         self._fx(runner.strip, dt)
 
 class FxLoopProgram(ProgramBase):
-    def start(self, runner: ProgramRunner, delay=20, fade=3) -> None:
+    def start(self, runner: ProgramRunner, delay=120, fade=3) -> None:
         self._gen = None
         self._fx = None
         self._nextfx = None
