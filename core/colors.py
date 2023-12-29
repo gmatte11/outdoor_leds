@@ -68,7 +68,7 @@ class rainbow(Sequence, Iterator):
         return _rainbow_wheel((i * (256 // self._mod)) & 255)
 
     def __getitem__(self, idx: int) -> tuple[int, int, int]:
-        _rainbow_wheel((idx * (256 // self._mod)) & 255)
+        return _rainbow_wheel((idx * (256 // self._mod)) & 255)
 
     def __len__(self) -> int:
         return self._count

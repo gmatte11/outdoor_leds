@@ -294,8 +294,8 @@ def firework_rocket(colors, rocket_size = 5):
     return _()
 
 def firework_explosion(colors, max_ratio = .90):
-    _particleLifetime = (3., 7.)
-    _particleVelocity = (1., 20.)
+    _particleLifetime = (2., 6.)
+    _particleVelocity = (3., 15.)
     _particleCount = (4, 12)
 
     class _particle:
@@ -315,7 +315,7 @@ def firework_explosion(colors, max_ratio = .90):
             idx = int(math.floor(self._pos))
             if 0 < idx < len(leds):
                 fade_ratio = self._t / self._lifetime
-                leds[idx] = blend_max(leds[idx], blend(self._c, (0) * 3, fade_ratio, _particle._ease))
+                leds[idx] = blend_max(leds[idx], blend(self._c, 0, fade_ratio, _particle._ease))
             else:
                 self._t = self._lifetime
 

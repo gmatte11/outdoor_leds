@@ -98,21 +98,6 @@ class FxLoopProgram(ProgramBase):
             self._fx = self._nextfx
             self._nextfx = None
 
-
-class XMas(FxLoopProgram):
-    @classmethod
-    def is_scheduled(cls, when: dt.date) -> bool:
-        return dt.date(when.year, 12, 1) <= when <= dt.date(when.year, 12, 28)
-
-    def _createEffects(self, runner: ProgramRunner):
-        n = runner.strip.n
-        return [
-            fx.twinkle(0x101010, [0x8100db, 0x1e7c20, 0x0037fb, 0xb60000, 0xdf6500]),
-            fx.color_train(3, 2, n - 10, rainbow(n - 10, 20)),
-            #fx.breath([0xff0000, 0x00ff00], .015),
-        ]
-
-
 class Halloween(FxLoopProgram):
     @classmethod
     def is_scheduled(cls, when: dt.date):
@@ -127,14 +112,28 @@ class Halloween(FxLoopProgram):
             #fx.rotate([0x30aa00, 0xbf1500, 0x4b0f6e, 0x000000], 3, 3),
         ]
 
+class XMas(FxLoopProgram):
+    @classmethod
+    def is_scheduled(cls, when: dt.date) -> bool:
+        return dt.date(when.year, 12, 1) <= when <= dt.date(when.year, 12, 27)
+
+    def _createEffects(self, runner: ProgramRunner):
+        n = runner.strip.n
+        return [
+            fx.twinkle(0x101010, [0x8100db, 0x1e7c20, 0x0037fb, 0xb60000, 0xdf6500]),
+            fx.color_train(3, 2, n - 10, rainbow(n - 10, 20)),
+            #fx.breath([0xff0000, 0x00ff00], .015),
+        ]
+
+
 class NewYear(FxLoopProgram):
     @classmethod
     def is_scheduled(cls, when: dt.date):
-        return dt.date(when.year, 12, 31) <= when <= dt.date(when.year + 1, 1, 1)
+        return dt.date(when.year, 12, 31) <= when <= dt.date(when.year + 1, 1, 2)
 
     def _createEffects(self, runner: ProgramRunner):
         return [
-            fx.firework_explosion(rainbow(28)),
+            fx.firework_explosion(rainbow(28), .5),
             fx.firework_rocket(rainbow(14)),
         ]
 
@@ -187,4 +186,4 @@ class ProgramRunner:
     _start_time = dt.time(16, 30, 0)
     _end_time = dt.time(1, 0, 0)
     _default_program = DefaultProgram
-    _special_programs = [XMas, Halloween]
+    _special_programs = [Halloween, XMas, NewYear]
